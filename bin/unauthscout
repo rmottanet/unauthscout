@@ -6,30 +6,52 @@
 # Using 'dirname $0' ensures it works from any directory.
 BASE_DIR=$(dirname "$(readlink -f "$0")")/..
 source "${BASE_DIR}/lib/core.sh"
-# source "${BASE_DIR}/lib/gitlab_api.sh"
+source "${BASE_DIR}/lib/gitlab_api.sh"
 
 main() {
     local target="$1"
+    local raw_mode=false
 
     # 1. Dependency Validation (Core)
     check_dependencies
 
     # 2. Flag/argument handling
+    for arg in "$@"; do
+        case "$arg" in
+            --raw)
+                raw_mode=true
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            *)
+                target="$arg"
+                ;;
+        esac
+    done
+    
     if [[ "$target" == "--help" ]] || [[ "$target" == "-h" ]] || is_empty "$target"; then
         show_help
         exit 0
     fi
-
+    
     # 3. Beginning of Recognition
     log_info "Starting scout on target: ${CLR_SUCCESS}${target}${CLR_RESET}"
     echo "------------------------------------------------------------"
 
-    # TODO: Implement the orchestration logic.
-    # eg:
-    # scan_gitlab "$target"
-    # scan_github "$target"
-    
+    user_json="$(get_gitlab_user_raw "$target")" \
+        || die "Failed to fetch GitLab user data"
+
+    if [[ "$raw_mode" == true ]]; then
+        echo "$user_json"
+    else
+        echo "$user_json" | parse_gitlab_user \
+            || die "Failed to parse GitLab user response"
+    fi
+
     log_success "Scout finished for $target"
+    
 }
 
 # Start the script by passing all the arguments.
