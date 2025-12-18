@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# bin/unauthscout
+# Entry point for the UnauthScout tool
+
+# Importing modules (Relative path to bin)
+# Using 'dirname $0' ensures it works from any directory.
+BASE_DIR=$(dirname "$(readlink -f "$0")")/..
+source "${BASE_DIR}/lib/core.sh"
+# source "${BASE_DIR}/lib/gitlab_api.sh"
+
+main() {
+    local target="$1"
+
+    # 1. Dependency Validation (Core)
+    check_dependencies
+
+    # TODO: Implement the orchestration logic.
+    # eg:
+    # scan_gitlab "$target"
+    # scan_github "$target"
+
+}
+
+# Start the script by passing all the arguments.
+main "$@"
