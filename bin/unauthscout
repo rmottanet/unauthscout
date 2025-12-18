@@ -7,11 +7,14 @@
 BASE_DIR=$(dirname "$(readlink -f "$0")")/..
 source "${BASE_DIR}/lib/core.sh"
 source "${BASE_DIR}/lib/gitlab_api.sh"
+source "${BASE_DIR}/lib/github_api.sh"
 
 main() {
     local target="$1"
     local raw_mode=false
-
+    local run_github=false
+    local run_gitlab=false
+    
     # 1. Dependency Validation (Core)
     check_dependencies
 
@@ -21,9 +24,18 @@ main() {
             --raw)
                 raw_mode=true
                 ;;
+            --github|-gh)
+                run_github=true
+                ;;
+            --gitlab|-gl)
+                run_gitlab=true
+                ;;
             -h|--help)
                 show_help
                 exit 0
+                ;;
+            -*)
+                die "Unknown option: $arg"
                 ;;
             *)
                 target="$arg"
@@ -36,18 +48,48 @@ main() {
         exit 0
     fi
     
+    # If NO platform was specifically selected, activate BOTH.
+    if [[ "$run_github" == false && "$run_gitlab" == false ]]; then
+        run_github=true
+        run_gitlab=true
+    fi
+    
     # 3. Beginning of Recognition
     log_info "Starting scout on target: ${CLR_SUCCESS}${target}${CLR_RESET}"
     echo "------------------------------------------------------------"
 
-    user_json="$(get_gitlab_user_raw "$target")" \
-        || die "Failed to fetch GitLab user data"
+    # --- Execução GitLab ---
+    if [[ "$run_gitlab" == true ]]; then
+        log_info "Searching on GitLab..."
+        user_gitlab="$(get_gitlab_user_raw "$target")"
+        
+        if [[ -n "$user_gitlab" ]]; then
+            if [[ "$raw_mode" == true ]]; then
+                echo "$user_gitlab"
+            else
+                echo "$user_gitlab" | parse_gitlab_user || log_error "Failed to parse GitLab data"
+            fi
+        else
+            log_warn "User not found on GitLab"
+        fi
+        echo "------------------------------------------------------------"
+    fi
 
-    if [[ "$raw_mode" == true ]]; then
-        echo "$user_json"
-    else
-        echo "$user_json" | parse_gitlab_user \
-            || die "Failed to parse GitLab user response"
+    # --- Execução GitHub ---
+    if [[ "$run_github" == true ]]; then
+        log_info "Searching on GitHub..."
+        user_github="$(get_github_user_raw "$target")"
+        
+        if [[ -n "$user_github" ]]; then
+            if [[ "$raw_mode" == true ]]; then
+                echo "$user_github"
+            else
+                echo "$user_github" | parse_github_user || log_error "Failed to parse GitHub data"
+            fi
+        else
+            log_warn "User not found on GitHub"
+        fi
+        echo "------------------------------------------------------------"
     fi
 
     log_success "Scout finished for $target"
