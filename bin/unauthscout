@@ -14,11 +14,22 @@ main() {
     # 1. Dependency Validation (Core)
     check_dependencies
 
+    # 2. Flag/argument handling
+    if [[ "$target" == "--help" ]] || [[ "$target" == "-h" ]] || is_empty "$target"; then
+        show_help
+        exit 0
+    fi
+
+    # 3. Beginning of Recognition
+    log_info "Starting scout on target: ${CLR_SUCCESS}${target}${CLR_RESET}"
+    echo "------------------------------------------------------------"
+
     # TODO: Implement the orchestration logic.
     # eg:
     # scan_gitlab "$target"
     # scan_github "$target"
-
+    
+    log_success "Scout finished for $target"
 }
 
 # Start the script by passing all the arguments.
