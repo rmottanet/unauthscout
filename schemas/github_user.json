@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GitHubUser",
+  "type": "object",
+  "required": [
+    "id",
+    "login",
+    "name",
+    "type",
+    "html_url",
+    "public_repos",
+    "followers",
+    "following"
+  ],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique GitHub user identifier"
+    },
+    "login": {
+      "type": "string",
+      "description": "GitHub username (handle)"
+    },
+    "name": {
+      "type": ["string", "null"],
+      "description": "Display name"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["User", "Organization"],
+      "description": "Account type"
+    },
+    "html_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public profile URL"
+    },
+    "public_repos": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of public repositories"
+    },
+    "followers": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of followers"
+    },
+    "following": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of following accounts"
+    }
+  },
+  "additionalProperties": false
+}
