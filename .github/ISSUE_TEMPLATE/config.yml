@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: rmotta.net:~#
+    url: https://github.com/rmottanet
+    about: Github Profile link.
+  - name: WS2GIT Project
+    url: https://github.com/users/rmottanet/projects/7
+    about: Github Projects link.

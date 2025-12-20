@@ -1,4 +1,4 @@
-Configuração e resolução de problemas
+# Configuração e resolução de problemas
 
 Este documento descreve como configurar o UnauthScout, suas dependências de tempo de execução
 e como resolver erros comuns durante a execução.

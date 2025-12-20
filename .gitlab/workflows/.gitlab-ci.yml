@@ -1,0 +1,47 @@
+stages:
+  - deploy
+
+publish-wiki:
+  stage: deploy
+  image: alpine:latest
+  variables:
+    SOURCE_DIR: "docs/pt/content/"
+    WIKI_DIR: "wiki_temp_folder"
+  only:
+    refs:
+      - main
+    changes:
+      - "docs/pt/content/**/*"
+  before_script:
+    - apk add --no-cache git rsync openssh
+  script:
+    # 1. Validação de segurança: Verifica se o token existe
+    - |
+      if [ -z "${GITLAB_TOKEN}" ]; then
+        echo "ERRO: A variável GITLAB_TOKEN está vazia. Verifique Settings > CI/CD > Variables."
+        exit 1
+      fi
+
+    # 2. Configura a URL. Usar 'project_token' como usuário 
+    - WIKI_URL="https://project_token:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.wiki.git"
+    
+    # 3. Clone com tratamento de erro
+    - echo "Iniciando clone da wiki..."
+    - git clone "$WIKI_URL" "$WIKI_DIR" || { echo "Falha ao clonar a wiki. Verifique permissões do token."; exit 1; }
+    
+    # 4. Synch
+    - rsync -av --delete --exclude '.git/' "$SOURCE_DIR" "$WIKI_DIR/"
+    
+    # 5. Push
+    - cd "$WIKI_DIR"
+    - git config user.name "GitLab CI Bot"
+    - git config user.email "gitlab-ci@${CI_SERVER_HOST}"
+    - git add .
+    - |
+      if git diff-index --quiet HEAD; then
+        echo "Nenhuma alteração para sincronizar."
+      else
+        git commit -m "docs: sync from commit $CI_COMMIT_SHORT_SHA"
+        # Tenta push para main ou master (depende da versão do GitLab)
+        git push origin HEAD:main || git push origin HEAD:master
+      fi
