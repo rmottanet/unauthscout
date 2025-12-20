@@ -1,0 +1,94 @@
+name: Feature Request
+description: Propose a new feature or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+type: "Feature"
+projects: ["rmottanet/7"] # projeto pelo número
+assignees:
+  - rmottanet
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature requests should align with UnauthScout design principles:
+        unauthenticated, minimal, provider-focused, schema-driven.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What limitation or problem does this feature solve?
+      placeholder: Describe the problem clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature or change you are proposing.
+      placeholder: Be explicit and concrete.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope / Impacted areas
+      description: Select all areas impacted by this feature.
+      options:
+        - label: CLI / UX
+        - label: Provider – GitHub
+        - label: Provider – GitLab
+        - label: Cross-provider (shared logic)
+        - label: Schemas / Output contracts
+        - label: Documentation
+        - label: Tests
+        - label: Internal / Refactor
+    validations:
+      required: true
+
+  - type: input
+    id: scope_extra
+    attributes:
+      label: Additional scope (optional)
+      description: Any other area impacted not listed above.
+      placeholder: e.g. New provider, tooling, CI
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative approaches or trade-offs?
+    validations:
+      required: false
+
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Trade-offs acknowledged
+      description: What are the known downsides, limitations, or risks of this approach?
+      placeholder: e.g. Increased API calls, reduced portability, partial provider support
+    validations:
+      required: true
+
+  - type: textarea
+    id: success_metrics
+    attributes:
+      label: Success metrics
+      description: How will we know this feature is successful?
+      placeholder: e.g. New CLI flag documented, schema updated, test coverage added
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow the Code of Conduct.
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
