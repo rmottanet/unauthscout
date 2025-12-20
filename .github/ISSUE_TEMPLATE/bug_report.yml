@@ -1,0 +1,80 @@
+name: Bug Report
+description: Report a reproducible bug in UnauthScout
+title: "[Bug]: "
+labels: ["bug"]
+type: "Bug"
+projects: ["rmottanet/7"] # projeto pelo número
+assignees:
+  - rmottanet
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve **UnauthScout**.
+        Please provide as much detail as possible.
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: Optional way to reach you for follow-up.
+      placeholder: email@example.com
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you observe, and what did you expect instead?
+      placeholder: Describe the bug clearly and concisely.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      description: Which provider were you querying?
+      options:
+        - GitHub
+        - GitLab
+        - Both
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Command executed
+      description: Exact command used to trigger the issue.
+      placeholder: unauthscout <username> [--raw]
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: UnauthScout version
+      description: Version tag, commit hash or branch name.
+      placeholder: v0.1.0, main, a1b2c3d
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output / logs
+      description: Paste CLI output or error messages.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow the Code of Conduct.
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
