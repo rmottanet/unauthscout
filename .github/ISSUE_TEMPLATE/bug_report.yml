@@ -2,7 +2,6 @@ name: Bug Report
 description: Report a reproducible bug in UnauthScout
 title: "[Bug]: "
 labels: ["bug"]
-type: "Bug"
 projects: ["rmottanet/7"] # projeto pelo número
 assignees:
   - rmottanet
