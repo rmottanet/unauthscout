@@ -2,7 +2,6 @@ name: Feature Request
 description: Propose a new feature or improvement
 title: "[Feature]: "
 labels: ["enhancement"]
-type: "Feature"
 projects: ["rmottanet/7"] # projeto pelo número
 assignees:
   - rmottanet
