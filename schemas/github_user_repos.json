@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GitHubUserRepository",
+  "description": "Normalized public repository representation from GitHub user enumeration",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "full_name",
+    "url",
+    "stars",
+    "forks"
+  ],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique repository ID assigned by GitHub"
+    },
+    "name": {
+      "type": "string",
+      "description": "Repository name"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "Fully qualified repository name (owner/name)"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Repository description"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public HTML URL of the repository"
+    },
+    "stars": {
+      "type": "integer",
+      "description": "Number of stargazers"
+    },
+    "forks": {
+      "type": "integer",
+      "description": "Number of forks"
+    },
+    "language": {
+      "type": ["string", "null"],
+      "description": "Primary programming language"
+    }
+  },
+  "additionalProperties": false
+}
