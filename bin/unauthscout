@@ -14,60 +14,49 @@ main() {
     local raw_mode=false
     local run_github=false
     local run_gitlab=false
+    local fetch_repos=false 
     
     # 1. Dependency Validation (Core)
     check_dependencies
 
     # 2. Flag/argument handling
-    for arg in "$@"; do
-        case "$arg" in
-            --raw)
-                raw_mode=true
-                ;;
-            --github|-gh)
-                run_github=true
-                ;;
-            --gitlab|-gl)
-                run_gitlab=true
-                ;;
-            -h|--help)
-                show_help
-                exit 0
-                ;;
-            -*)
-                die "Unknown option: $arg"
-                ;;
-            *)
-                target="$arg"
-                ;;
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --raw) raw_mode=true; shift ;;
+            --github|-gh) run_github=true; shift ;;
+            --gitlab|-gl) run_gitlab=true; shift ;;
+            --repos|-r) fetch_repos=true; shift ;;
+            -h|--help) show_help; exit 0 ;;
+            -*) die "Unknown option: $1" ;;
+            *) target="$1"; shift ;;
         esac
     done
     
-    if [[ "$target" == "--help" ]] || [[ "$target" == "-h" ]] || is_empty "$target"; then
-        show_help
-        exit 0
-    fi
-    
-    # If NO platform was specifically selected, activate BOTH.
+    # 3. Defaults
+    if [[ -z "$target" ]]; then show_help; exit 0; fi
     if [[ "$run_github" == false && "$run_gitlab" == false ]]; then
-        run_github=true
-        run_gitlab=true
+        run_github=true; run_gitlab=true
     fi
-    
-    # 3. Beginning of Recognition
+
     log_info "Starting scout on target: ${CLR_SUCCESS}${target}${CLR_RESET}"
     echo "------------------------------------------------------------"
 
-    # --- Execução GitLab ---
+    # --- Fluxo GitLab ---
     if [[ "$run_gitlab" == true ]]; then
         log_info "Searching on GitLab..."
-        user_gitlab="$(get_gitlab_user_raw "$target")"
         
-        if [[ -n "$user_gitlab" ]]; then
-            if [[ "$raw_mode" == true ]]; then
-                echo "$user_gitlab"
-            else
-                echo "$user_gitlab" | parse_gitlab_user || log_error "Failed to parse GitLab data"
+        # 1. Profile
+        local user_data
+        user_data=$(get_gitlab_user_raw "$target")
+        if [[ -n "$user_data" && "$user_data" != "[]" ]]; then
+            [[ "$raw_mode" == true ]] && echo "$user_data" || echo "$user_data" | parse_gitlab_user
+            
+            # 2. Repos (Condicional)
+            if [[ "$fetch_repos" == true ]]; then
+                log_info "Fetching GitLab repositories..."
+                local repo_data
+                repo_data=$(get_gitlab_repos_raw "$target")
+                [[ "$raw_mode" == true ]] && echo "$repo_data" || echo "$repo_data" | parse_gitlab_repos
             fi
         else
             log_warn "User not found on GitLab"
@@ -75,16 +64,22 @@ main() {
         echo "------------------------------------------------------------"
     fi
 
-    # --- Execução GitHub ---
+    # --- Fluxo GitHub ---
     if [[ "$run_github" == true ]]; then
         log_info "Searching on GitHub..."
-        user_github="$(get_github_user_raw "$target")"
         
-        if [[ -n "$user_github" ]]; then
-            if [[ "$raw_mode" == true ]]; then
-                echo "$user_github"
-            else
-                echo "$user_github" | parse_github_user || log_error "Failed to parse GitHub data"
+        # 1. Profile
+        local gh_user
+        gh_user=$(get_github_user_raw "$target")
+        if [[ -n "$gh_user" ]]; then
+            [[ "$raw_mode" == true ]] && echo "$gh_user" || echo "$gh_user" | parse_github_user
+            
+            # 2. Repos (Condicional)
+            if [[ "$fetch_repos" == true ]]; then
+                log_info "Fetching GitHub repositories..."
+                local gh_repos
+                gh_repos=$(get_github_repos_raw "$target")
+                [[ "$raw_mode" == true ]] && echo "$gh_repos" || echo "$gh_repos" | parse_github_repos
             fi
         else
             log_warn "User not found on GitHub"
@@ -93,8 +88,6 @@ main() {
     fi
 
     log_success "Scout finished for $target"
-    
 }
 
-# Start the script by passing all the arguments.
 main "$@"
