@@ -32,25 +32,48 @@ is_empty() {
     [[ -z "$1" ]]
 }
 
+# --- Test Validation ---
+assert_not_empty() {
+    local data="$1"
+    local msg="$2"
+    if [[ -n "$data" && "$data" != "[]" && "$data" != "{}" ]]; then
+        log_success "Assertion Passed: $msg"
+        return 0
+    else
+        log_error "Assertion Failed: $msg"
+        return 1
+    fi
+}
+
 # --- Help Message ---
 show_help() {
     cat << EOF
 UnauthScout - OSINT reconnaissance for GitLab & GitHub (Unauthenticated)
 
 Usage:
-    $(basename "$0") <username>
-    $(basename "$0") [options]
+    $(basename "$0") [options] <username>
 
 Arguments:
     <username>      The target git username to scout.
 
-Options:
+Platform Filters:
+    -gh, --github   Search only on GitHub.
+    -gl, --gitlab   Search only on GitLab.
+    (If neither is specified, both platforms are searched)
+
+Search Options:
+    -r, --repos     List public repositories/projects for the user.
+    --raw           Output raw JSON instead of formatted results.
+
+General Options:
     -h, --help      Show this help message and exit.
 
 Examples:
-    ./bin/unauthscout gitlab-org
     ./bin/unauthscout rmottanet
+    ./bin/unauthscout --gitlab -r dzaporozhets
+    ./bin/unauthscout -gh --raw torvalds
 
 Note: This tool uses public endpoints and does not require API tokens.
+      Subject to rate limits (especially GitHub).
 EOF
 }
