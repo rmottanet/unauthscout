@@ -11,8 +11,10 @@ It provides a clear reference for:
 ## Endpoint
 
 ```
+
 GET [https://gitlab.com/api/v4/users?username={username}](https://gitlab.com/api/v4/users?username={username})
-````
+
+```
 
 - Authentication: ❌ Not required
 - Scope: Public user search results
