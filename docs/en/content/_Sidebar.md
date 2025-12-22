@@ -1,14 +1,16 @@
 # [UnauthScout Wiki](./Home)
 
 ## 🚀 Getting Started
-[Setup & Installation](./setup) - Quick install guide and first configuration
+[Setup & Usage](./setup) - Quick install guide and first configuration
 
 ## 🧩 Core Concepts
 [OSINT Workflow](./osint-flow) - Ethical reconnaissance methodology and best practices
 
 ## 📊 API Documentation
-[GitHub API Map](./github-user-map) - Complete field mapping for GitHub user data  
-[GitLab API Map](./gitlab-user-map) - Complete field mapping for GitLab user data
+- [GitHub API Repo Map](./github-repo-map) - Complete field mapping for GitHub repo data  
+- [GitHub API User Map](./github-user-map) - Complete field mapping for GitHub user data
+- [GitLab API Repo Map](./gitlab-repo-map) - Complete field mapping for GitLab repo data
+- [GitLab API User Map](./gitlab-user-map) - Complete field mapping for GitLab user data
 
 ---
 

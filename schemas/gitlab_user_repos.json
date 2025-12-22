@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GitLabUserProject",
+  "description": "Normalized public project representation from GitLab user enumeration",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "path",
+    "url",
+    "stars",
+    "forks"
+  ],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique project ID assigned by GitLab"
+    },
+    "name": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "path": {
+      "type": "string",
+      "description": "Project path with namespace (group/name or user/name)"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Project description"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public web URL of the project"
+    },
+    "stars": {
+      "type": "integer",
+      "description": "Number of stars"
+    },
+    "forks": {
+      "type": "integer",
+      "description": "Number of forks"
+    }
+  },
+  "additionalProperties": false
+}

@@ -14,7 +14,7 @@ It serves as a reference for:
 
 GET [https://api.github.com/users/{username}](https://api.github.com/users/{username})
 
-````
+```
 
 - Authentication: ❌ Not required
 - Scope: Public user data only

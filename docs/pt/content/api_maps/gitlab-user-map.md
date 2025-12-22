@@ -14,7 +14,7 @@ Ele fornece uma referência clara para:
 
 GET [https://gitlab.com/api/v4/users?username={username}](https://gitlab.com/api/v4/users?username={username})
 
-````
+```
 
 - Autenticação: ❌ Não é necessária
 - Escopo: Somente dados públicos do usuário

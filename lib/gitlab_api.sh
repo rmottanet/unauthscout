@@ -17,3 +17,21 @@ parse_gitlab_user() {
         web_url
     }'
 }
+
+# --- Repository/Project Functions ---
+get_gitlab_repos_raw() {
+    local username=$1
+    curl -sf "${GITLAB_BASE_URL}/users/${username}/projects?visibility=public&per_page=100"
+}
+
+parse_gitlab_repos() {
+    jq '.[] | {
+        id,
+        name: .name,
+        path: .path_with_namespace,
+        description,
+        url: .web_url,
+        stars: .star_count,
+        forks: .forks_count
+    }'
+}
