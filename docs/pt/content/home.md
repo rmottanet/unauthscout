@@ -17,14 +17,23 @@ Esta wiki segue os princípios **DRY (Don't Repeat Yourself - Não se Repita)**:
 
 ## 📢 Novidades
 
-### Versão mais recente: [v0.1.0](https://github.com/rmottanet/unauthscout/releases/tag/v0.1.0)
+### Versão mais recente: [v0.2.0](https://github.com/rmottanet/unauthscout/releases/tag/v0.2.0)
+- **Enumeração de repositórios** – Listagem de repositórios de usuários para GitHub e GitLab
+- Documentação expandida de mapeamento de campos da API
+- Atualizações de documentação multilíngue (EN/PT)
+- CLI aprimorada com suporte à flag `--repos`
+
+### Versão anterior: [v0.1.0](https://github.com/rmottanet/unauthscout/releases/tag/v0.1.0)
 - Enumeração de usuários do GitLab
 - Saída JSON normalizada via esquemas
-- Interface de linha de comando básica
-- Arquitetura baseada em provedores
+- Interface CLI básica
+- Base para arquitetura baseada em provedores
 
-### Em desenvolvimento (v0.2.0)
-- **Enumeração de repositórios** - Listagem de repositórios de usuários para ambos os provedores
+### Atualmente em desenvolvimento (v0.3.0)
+- **Normalização e inteligência resumida** – Transformação de dados brutos do provedor em insights de reconhecimento unificados
+- Comparação de dados aprimorada entre plataformas
+- Resumo inteligente de pegadas de usuários e repositórios
+- Base para correlação e relatórios entre fornecedores
 
 ## 📌 Observações importantes
 
