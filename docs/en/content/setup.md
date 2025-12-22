@@ -53,6 +53,46 @@ Expected behavior:
 * No authentication prompts
 * No stack traces or shell errors
 
+## Repository / Project Enumeration
+
+UnauthScout can optionally enumerate **public repositories/projects** associated
+with a user via the `--repos` flag.
+
+This feature is **explicitly opt-in** and scoped per provider.
+
+### Enumerate repositories on both providers
+
+```bash
+unauthscout torvalds --repos
+```
+
+### Enumerate GitHub repositories only
+
+```bash
+unauthscout torvalds --github --repos
+```
+
+### Enumerate GitLab projects only
+
+```bash
+unauthscout dzaporozhets --gitlab --repos
+```
+
+### Combine with raw mode
+
+Raw mode can be used to inspect the original API responses:
+
+```bash
+unauthscout torvalds --repos --raw
+unauthscout torvalds --github --repos --raw
+```
+
+Raw output is useful for:
+
+* Inspecting newly exposed fields
+* Validating API behavior
+* Supporting schema evolution
+
 ## Common Errors and Troubleshooting
 
 ### Missing dependency
@@ -68,6 +108,7 @@ Expected behavior:
 * One or more required tools are not installed or not in PATH.
 
 **Resolution**
+
 Install the missing dependency, for example:
 
 ```bash
@@ -88,17 +129,23 @@ or
 [ERROR] Failed to fetch GitLab user data
 ```
 
+or during repository enumeration:
+
+```
+[ERROR] Failed to fetch repository data
+```
+
 **Possible causes**
 
 * Network connectivity issues
 * Temporary API outage
-* Rate limiting by the provider
+* Provider rate limiting
 
 **Resolution**
 
 * Verify network access
-* Retry the request
-* Use `--raw` to inspect partial responses if available
+* Retry the request after a delay
+* Use `--raw` to inspect partial responses
 
 ### Parsing failure
 
@@ -117,19 +164,20 @@ or
 **Resolution**
 
 * Re-run the command with `--raw`
-* Compare raw output with the documented API mapping
-* Validate schema alignment
+* Compare raw output with the documented API mappings
+* Validate schema alignment under `schemas/`
 
 ### No results returned (GitLab)
 
 **Behavior**
 
-* Empty output or parsing error
+* Empty output or parsing error during profile or project lookup
 
 **Cause**
 
 * The GitLab `/users?username=` endpoint returns an empty array
 * Username does not exist or is ambiguous
+* User has no public projects
 
 **Resolution**
 
@@ -142,7 +190,8 @@ UnauthScout provides a `--raw` flag to bypass normalization:
 
 ```bash
 unauthscout <username> --raw
-unauthscout <username> --raw -gh
+unauthscout <username> --github --raw
+unauthscout <username> --repos --raw
 ```
 
 Use raw mode to:
@@ -169,6 +218,7 @@ UnauthScout does not attempt to bypass rate limits.
 For sustained usage, consider:
 
 * Spacing requests
+* Limiting provider scope (`--github` / `--gitlab`)
 * Adding authenticated support in a future version
 
 ## Summary
@@ -181,3 +231,4 @@ If something breaks:
 2. Re-run with `--raw`
 3. Compare raw output against the API mapping docs
 4. Update schemas and parsers accordingly
+

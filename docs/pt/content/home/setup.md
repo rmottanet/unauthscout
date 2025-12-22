@@ -53,14 +53,54 @@ Comportamento esperado:
 * Sem solicitações de autenticação
 * Sem rastreamentos de pilha ou erros de shell
 
+## Enumeração de Repositórios/Projetos
+
+O UnauthScout pode, opcionalmente, enumerar **repositórios/projetos públicos** associados
+a um usuário por meio da flag `--repos`.
+
+Este recurso é **explicitamente ativado** e tem escopo definido por provedor.
+
+### Enumerar repositórios em ambos os provedores
+
+```bash
+unauthscout torvalds --repos
+```
+
+### Enumerar apenas repositórios do GitHub
+
+```bash
+unauthscout torvalds --github --repos
+```
+
+### Enumerar apenas projetos do GitLab
+
+```bash
+unauthscout dzaporozhets --gitlab --repos
+```
+
+### Combinar com o modo raw
+
+O modo raw pode ser usado para inspecionar as respostas originais da API:
+
+```bash
+unauthscout torvalds --repos --raw
+unauthscout torvalds --github --repos --raw
+```
+
+A saída raw é útil para:
+
+* Inspecionar campos recém-expostos
+* Validar o comportamento da API
+* Suportar a evolução do esquema
+
 ## Erros comuns e solução de problemas
 
-### Dependência ausente
+### Ausente Dependência
 
 **Erro**
 
 ```
-[ERROR] Missing required command: jq
+[ERRO] Comando necessário ausente: jq
 ```
 
 **Causa**
@@ -68,92 +108,101 @@ Comportamento esperado:
 * Uma ou mais ferramentas necessárias não estão instaladas ou não estão no PATH.
 
 **Solução**
+
 Instale a dependência ausente, por exemplo:
 
 ```bash
 sudo apt install jq
 ```
 
-### Falha na rede ou na API
+### Falha de rede ou API
 
 **Erro**
 
 ```
-[ERROR] Failed to fetch GitHub user data
+[ERRO] Falha ao buscar dados do usuário do GitHub
 ```
 
 ou
 
 ```
-[ERROR] Failed to fetch GitLab user data
+[ERRO] Falha ao buscar dados do usuário do GitLab
+```
+
+ou durante a enumeração de repositórios:
+
+```
+[ERRO] Falha ao buscar dados do repositório
 ```
 
 **Possíveis causas**
 
 * Problemas de conectividade de rede
 * Interrupção temporária da API
-* Limitação de taxa pelo provedor
+* Limitação de taxa do provedor
 
 **Solução**
 
 * Verifique o acesso à rede
-* Tente novamente a solicitação
-* Use `--raw` para inspecionar respostas parciais, se disponíveis
+* Tente novamente a solicitação após um atraso
+* Use `--raw` para inspecionar respostas parciais
 
 ### Falha na análise
 
 **Erro**
 
 ```
-[ERROR] Failed to parse API response
+[ERRO] Falha ao analisar a resposta da API
 ```
 
 **Causa**
 
-* Formato de resposta da API alterado
-* JSON vazio ou malformado inesperado
-* Incompatibilidade de ferramentas (versão `jq`)
+* Formato da resposta da API * JSON vazio ou malformado inesperado
+* Incompatibilidade de ferramentas (versão do `jq`)
 
-**Resolução**
+**Solução**
 
-* Execute novamente o comando com `--raw`
-* Compare a saída bruta com o mapeamento da API documentado
-* Valide o alinhamento do esquema
+* Execute o comando novamente com `--raw`
+* Compare a saída bruta com os mapeamentos da API documentada
+* Valide o alinhamento do esquema em `schemas/`
 
 ### Nenhum resultado retornado (GitLab)
 
 **Comportamento**
 
-* Saída vazia ou erro de análise
+* Saída vazia ou erro de análise durante a busca de perfil ou projeto
 
 **Causa**
 
-* O endpoint GitLab `/users?username=` retorna uma matriz vazia
+* O endpoint `/users?username=` do GitLab retorna um array vazio
 * O nome de usuário não existe ou é ambíguo
+* O usuário não possui projetos públicos
 
-**Resolução**
+**Solução**
 
 * Verifique o nome de usuário manualmente
 * Inspecione a saída bruta usando `--raw`
 
-## Depuração com o modo bruto
+## Depuração com o Modo Bruto
 
-O UnauthScout fornece um sinalizador `--raw` para ignorar a normalização:
+O UnauthScout fornece um parâmetro `--raw` para ignorar a normalização:
 
 ```bash
-unauthscout <username> --raw
-unauthscout <username> --raw -gh
+unauthscout <nome de usuário> --raw
+unauthscout <nome de usuário> --github --raw
+unauthscout <nome de usuário> --repos --raw
+
 ```
 
-Use o modo bruto para:
+Use o modo raw para:
 
 * Inspecionar campos recém-expostos
 * Validar o comportamento da API
 * Auxiliar na evolução do esquema
 
-O modo bruto destina-se à **análise e desenvolvimento**, não à automação.
+O modo raw destina-se à **análise e desenvolvimento**, não à automação.
 
-## Comportamento esperado de saída
+## Comportamento de saída esperado
 
 * A execução bem-sucedida retorna o código de saída `0`
 * Erros fatais encerram a execução com um código de saída diferente de zero
@@ -161,23 +210,24 @@ O modo bruto destina-se à **análise e desenvolvimento**, não à automação.
 
 ## Observações sobre limitação de taxa
 
-O UnauthScout não tenta contornar os limites de taxa.
+O UnauthScout não tenta burlar os limites de taxa.
 
-* As solicitações não autenticadas do GitHub têm taxa limitada
-* As solicitações não autenticadas do GitLab também podem ser limitadas
+* As requisições não autenticadas do GitHub têm limite de taxa.
+* As requisições não autenticadas do GitLab também podem ter sua taxa de requisições limitada.
 
 Para uso contínuo, considere:
 
-* Espaçar as solicitações
-* Adicionar suporte autenticado em uma versão futura
+* Espaçamento entre as requisições
+* Limitar o escopo do provedor (`--github` / `--gitlab`)
+* Adicionar suporte a autenticação em uma versão futura
 
 ## Resumo
 
 O UnauthScout foi projetado para falhar de forma rápida e visível.
 
-Se algo der errado:
+Se algo quebrar:
 
 1. Verifique as dependências
 2. Execute novamente com `--raw`
-3. Compare a saída bruta com os documentos de mapeamento da API
-4. Atualize os esquemas e analisadores de acordo
+3. Compare a saída bruta com a documentação de mapeamento da API
+4. Atualize os esquemas e analisadores sintáticos de acordo
