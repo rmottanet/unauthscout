@@ -5,44 +5,49 @@ GITHUB_BASE_URL="https://api.github.com"
 
 get_github_user_raw() {
     local username=$1
-    curl -sf "${GITHUB_BASE_URL}/users/${username}"
+    curl -sf -A "UnauthScout-Scanner" "${GITHUB_BASE_URL}/users/${username}"
 }
 
-parse_github_user() {
-    jq '{
-        id,
-        login,
-        name,
-        type,
-        html_url,
-        public_repos,
-        followers,
-        following
+# Responsibility: Normalize JSON to the UnauthScout Schema (Unified Intel)
+normalize_github_user() {
+    jq ${JQ_OPTS} '{
+        platform: "github",
+        handle: .login,
+        display_name: (.name // .login),
+        email: .email,
+        profile_url: .html_url,
+        metrics: {
+            public_repos: .public_repos,
+            followers: .followers,
+            following: .following
+        },
+        social: {
+            twitter: .twitter_username
+        },
+        location: .location,
+        bio: .bio,
+        created_at: .created_at
     }'
 }
 
 
 # --- Repository Functions ---
-# SRP: Responsabilidade única de buscar os repositórios brutos
 get_github_repos_raw() {
     local username=$1
-    # O endpoint padrão para listar repositórios de um usuário
-    # per_page=100 é o máximo permitido por página no GitHub
-    curl -sf -A "UnauthScout-Scanner" \
-        "${GITHUB_BASE_URL}/users/${username}/repos?type=public&per_page=100&sort=updated"
+    # The default endpoint for listing a user's repositories.
+    # per_page=1000 This is the maximum allowed per page on GitHub.
+    curl -sf -A "UnauthScout-Scanner" "${GITHUB_BASE_URL}/users/${username}/repos?type=public&per_page=100&sort=updated"
 }
 
-# SRP: Responsabilidade única de filtrar e formatar a saída para o Scout
-parse_github_repos() {
-    # Mapeamos os campos do GitHub para manter um padrão próximo ao do GitLab
-    jq '.[] | {
-        id,
+normalize_github_repos() {
+    jq ${JQ_OPTS} 'map({
         name: .name,
         full_name: .full_name,
-        description,
         url: .html_url,
+        description: (.description // ""),
         stars: .stargazers_count,
-        forks: .forks_count,
-        language
-    }'
+        language: (.language // "N/A"),
+        updated_at: .updated_at,
+        topics: (.topics // [])
+    })'
 }
