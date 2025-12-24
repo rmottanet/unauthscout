@@ -2,6 +2,8 @@
 # lib/core.sh
 # Core utility functions for UnauthScout
 
+VERSION="v0.3.0"
+
 # --- Colors for Output (UX/Clean Code) ---
 readonly CLR_RESET='\033[0m'
 readonly CLR_INFO='\033[36m'    # Ciano
@@ -27,9 +29,25 @@ check_dependencies() {
     done
 }
 
+# --- Error Handling (Responsibility: Critical failure management) ---
+# Imprime um erro formatado e encerra o script imediatamente.
+die() {
+    log_error "$*"
+    exit 1
+}
+
 # --- Input Validation ---
 is_empty() {
     [[ -z "$1" ]]
+}
+
+# --- Standard for integration (Compact Mode)  ---
+JQ_OPTS="-c" 
+
+set_pretty_mode() {
+    # No modo pretty, remove o -c. 
+    # Deixar vazio para o jq usar o padrão identado.
+    JQ_OPTS="" 
 }
 
 # --- Test Validation ---
@@ -48,7 +66,7 @@ assert_not_empty() {
 # --- Help Message ---
 show_help() {
     cat << EOF
-UnauthScout - OSINT reconnaissance for GitLab & GitHub (Unauthenticated)
+UnauthScout v0.3.0 - Unified OSINT Reconnaissance for GitLab & GitHub
 
 Usage:
     $(basename "$0") [options] <username>
@@ -61,19 +79,33 @@ Platform Filters:
     -gl, --gitlab   Search only on GitLab.
     (If neither is specified, both platforms are searched)
 
-Search Options:
-    -r, --repos     List public repositories/projects for the user.
-    --raw           Output raw JSON instead of formatted results.
+Recon & Intelligence:
+    -r, --repos     Fetch and list public repositories/projects.
+    -s, --summarize Generate an intelligence summary (Total stars, Top langs, 
+                    Activity insights). Requires -r.
+
+Output Formatting:
+    --raw           Output unified JSON. Optimized for machine integration.
+                    (Default: Compact mode for piping).
+    --pretty        Indents JSON output for human readability. 
+                    (Only effective when used with --raw).
 
 General Options:
     -h, --help      Show this help message and exit.
+    -v, --version   Show version information and exit.
 
 Examples:
-    ./bin/unauthscout rmottanet
-    ./bin/unauthscout --gitlab -r dzaporozhets
-    ./bin/unauthscout -gh --raw torvalds
+    ./bin/unauthscout rmottanet -r -s           # Full human-readable report
+    ./bin/unauthscout rmottanet --raw           # Compact JSON for scripts
+    ./bin/unauthscout rmottanet --raw --pretty  # Formatted JSON for analysis
+    ./bin/unauthscout torvalds -gh -r -s        # GitHub specific scout
 
-Note: This tool uses public endpoints and does not require API tokens.
-      Subject to rate limits (especially GitHub).
+Note: This tool uses public unauthenticated endpoints.
+      - GitLab: 'Language' field is limited to 'N/A' due to API architecture.
+      - Rate limits: Subject to platform-specific IP quotas (GH is stricter).
 EOF
+}
+
+show_version() {
+    echo "UnauthScout $VERSION"
 }
