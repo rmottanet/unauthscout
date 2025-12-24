@@ -1,37 +1,52 @@
 #!/usr/bin/env bash
 # tests/test_gitlab_api.sh
-# Responsabilidade: Validar as funções de integração com a API do GitLab
+# Responsabilidade: Validar o Contrato Unificado (v0.3.0) para GitLab
 
 BASE_DIR=$(dirname "$(readlink -f "$0")")/..
 source "${BASE_DIR}/lib/core.sh"
 source "${BASE_DIR}/lib/gitlab_api.sh"
 
-# Alvo de teste (usuário real para validação de integração)
+# Alvo de teste: Dmitriy Zaporozhets (Co-fundador do GitLab)
 TEST_TARGET="dzaporozhets"
 
-# --- Testes de Perfil de Usuário ---
+# --- Testes de Perfil de Usuário (Unified Intel) ---
 
 test_get_user() {
     log_info "Testing: get_gitlab_user_raw"
     local raw
     raw=$(get_gitlab_user_raw "$TEST_TARGET")
-    assert_not_empty "$raw" "Raw user data should not be empty"
+    assert_not_empty "$raw" "Raw GitLab user data should not be empty"
 }
 
-test_parse_user() {
-    log_info "Testing: parse_gitlab_user"
+test_normalize_user() {
+    log_info "Testing: normalize_gitlab_user (Unified Schema)"
     local raw
     raw=$(get_gitlab_user_raw "$TEST_TARGET")
     
     local parsed
-    parsed=$(echo "$raw" | parse_gitlab_user)
+    parsed=$(echo "$raw" | normalize_gitlab_user)
     
-    local username
-    username=$(echo "$parsed" | jq -r '.username')
+    # 1. Valida Identidade e Plataforma (Obrigatórios do Contrato)
+    local platform=$(echo "$parsed" | jq -r '.platform')
+    local handle=$(echo "$parsed" | jq -r '.handle')
     
-    # Valida se o parser extraiu o username correto
-    [[ "$username" == "$TEST_TARGET" ]]
-    assert_not_empty "$username" "Parsed username should match $TEST_TARGET"
+    [[ "$platform" == "gitlab" ]] || die "Platform mismatch: expected gitlab"
+    [[ "$handle" == "$TEST_TARGET" ]] || die "Handle mismatch: expected $TEST_TARGET"
+    
+    # 2. Valida Mapeamento de Display Name
+    local display_name=$(echo "$parsed" | jq -r '.display_name')
+    assert_not_empty "$display_name" "Display name should be present (found: $display_name)"
+
+    # 3. Valida Estrutura de Métricas (Mesmo que sejam null no GL público)
+    # O importante é a chave existir para não quebrar o motor de Report
+    if echo "$parsed" | jq -e '.metrics | has("public_repos")' > /dev/null; then
+        log_success "Assertion Passed: Unified metrics structure exists"
+    else
+        log_error "Assertion Failed: metrics structure is missing"
+        return 1
+    fi
+
+    log_success "Normalized user schema validated for GitLab"
 }
 
 # --- Testes de Repositórios/Projetos ---
@@ -41,7 +56,6 @@ test_get_repos() {
     local raw
     raw=$(get_gitlab_repos_raw "$TEST_TARGET")
     
-    # Validação estrutural: O endpoint de projetos DEVE retornar um array
     if echo "$raw" | jq -e 'type == "array"' > /dev/null; then
         assert_not_empty "$raw" "Should return a JSON array of projects"
     else
@@ -50,42 +64,64 @@ test_get_repos() {
     fi
 }
 
-test_parse_repos() {
-    log_info "Testing: parse_gitlab_repos"
-    local raw
-    raw=$(get_gitlab_repos_raw "$TEST_TARGET")
+
+test_normalize_gitlab_repos() {
+    log_info "Testing: normalize_gitlab_repos (Unified Schema)"
     
-    local parsed
-    parsed=$(echo "$raw" | parse_gitlab_repos)
-    
-    # Verifica presença de campos mapeados no primeiro item da lista
-    local first_item_name
-    first_item_name=$(echo "$parsed" | jq -r -s '.[0].name')
-    assert_not_empty "$first_item_name" "Parsed output should contain project names (found: $first_item_name)"
-    
-    # Verifica se o mapeamento 'path_with_namespace' -> 'path' funcionou
-    local first_item_path
-    first_item_path=$(echo "$parsed" | jq -r -s '.[0].path')
-    assert_not_empty "$first_item_path" "Parsed output should have path_with_namespace mapped to 'path'"
+    local raw=$(get_gitlab_repos_raw "$TEST_TARGET")
+    local parsed=$(echo "$raw" | normalize_gitlab_repos)
+
+    # 1. Valida se o output é um array
+    [[ "$(echo "$parsed" | jq -e 'type == "array"')" == "true" ]] || die "Output must be an array"
+
+    local first_item=$(echo "$parsed" | jq '.[0]')
+
+    # 2. Valida Honestidade Técnica (Language deve ser N/A)
+    local lang=$(echo "$first_item" | jq -r '.language')
+    if [[ "$lang" == "N/A" ]]; then
+        log_success "Assertion Passed: language is correctly set to 'N/A' (GitLab constraint)"
+    else
+        die "Assertion Failed: language should be 'N/A', but got '$lang'"
+    fi
+
+    # 3. Valida Mapeamento de Nome Completo (Path with Namespace)
+    local full_name=$(echo "$first_item" | jq -r '.full_name')
+    assert_not_empty "$full_name" "Full name (path_with_namespace) should be present"
+
+    # 4. Valida Estrelas (Mapeado de star_count)
+    local stars=$(echo "$first_item" | jq -r '.stars')
+    if [[ "$stars" =~ ^[0-9]+$ ]]; then
+        log_success "Assertion Passed: stars is numeric ($stars)"
+    else
+        die "Assertion Failed: stars is not a number"
+    fi
+
+    # 5. Valida Tags (Mapeamento de .topics ou .tag_list)
+    local topics_is_array=$(echo "$first_item" | jq -e '.topics | type == "array"')
+    if [[ "$topics_is_array" == "true" ]]; then
+        log_success "Assertion Passed: topics is a valid JSON array"
+    else
+        die "Assertion Failed: topics is missing or not an array"
+    fi
+
+    log_success "Normalized repositories schema validated for GitLab"
 }
 
+
 # --- Runner ---
-# Orquestra a execução de todos os testes deste módulo
 run_all_gitlab_tests() {
-    echo -e "\n${CLR_INFO}>>> Starting GitLab API Integration Tests${CLR_RESET}"
+    echo -e "\n${CLR_INFO}>>> Starting GitLab Unified Intel Tests (v0.3.0)${CLR_RESET}"
     echo "------------------------------------------------------------"
     
     test_get_user
-    test_parse_user    
+    test_normalize_user    
     test_get_repos
-    test_parse_repos
+    test_normalize_gitlab_repos
 
     echo "------------------------------------------------------------"
     log_success "All GitLab tests completed."
 }
 
-# Execução condicional: só roda se o script for chamado diretamente
-# Isso permite que as funções sejam importadas por outros scripts sem rodar o runner
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     run_all_gitlab_tests
 fi
