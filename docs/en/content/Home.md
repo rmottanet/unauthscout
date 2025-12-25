@@ -19,23 +19,17 @@ This wiki follows **DRY (Don't Repeat Yourself)** principles:
 
 ## 📢 What's New
 
-### Versão mais recente: [v0.2.0](https://github.com/rmottanet/unauthscout/releases/tag/v0.2.0)
-- **Enumeração de repositórios** – Listagem de repositórios de usuários para GitHub e GitLab
-- Documentação expandida de mapeamento de campos da API
-- Atualizações de documentação multilíngue (EN/PT)
-- CLI aprimorada com suporte à flag `--repos`
+### Latest version: [v0.3.0](https://github.com/rmottanet/unauthscout/releases/tag/v0.3.0)
+- Unified Metadata & Intelligence Layer – Normalized schemas and analytical summaries
+- Intelligent reporting with `--summarize` flag
+- Cross-provider repository analysis (total stars, top languages, activity insights)
+- Enhanced CLI with `--pretty` flag for formatted JSON output
 
-### Versão anterior: [v0.1.0](https://github.com/rmottanet/unauthscout/releases/tag/v0.1.0)
-- Enumeração de usuários do GitLab
-- Saída JSON normalizada via esquemas
-- Interface CLI básica
-- Base para arquitetura baseada em provedores
-
-### Atualmente em desenvolvimento (v0.3.0)
-- **Normalização e inteligência resumida** – Transformação de dados brutos do provedor em insights de reconhecimento unificados
-- Comparação de dados aprimorada entre plataformas
-- Resumo inteligente de pegadas de usuários e repositórios
-- Base para correlação e relatórios entre fornecedores
+### Previous version: v0.2.0
+- Repository enumeration – Listing of user repositories for GitHub and GitLab
+- Expanded API field mapping documentation
+- Multilingual documentation updates (EN/PT)
+- Improved CLI with `--repos` flag support
 
 
 ## 📌 Important Notes
