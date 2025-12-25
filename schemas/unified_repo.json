@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unified Repository Schema",
+  "description": "Standardized repository format for UnauthScout v0.3.0",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "name",
+      "full_name",
+      "url",
+      "stars",
+      "language",
+      "updated_at",
+      "topics"
+    ],
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Short name of the repository"
+      },
+      "full_name": {
+        "type": "string",
+        "description": "Complete path or owner/name format"
+      },
+      "url": {
+        "type": "string",
+        "format": "uri",
+        "description": "Public web URL of the repository"
+      },
+      "description": {
+        "type": "string",
+        "description": "Project description (empty string if null)"
+      },
+      "stars": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Total stargazers or star count"
+      },
+      "language": {
+        "type": "string",
+        "description": "Primary programming language (N/A for GitLab)"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time",
+        "description": "Timestamp of the last activity in ISO 8601"
+      },
+      "topics": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "List of tags or topics associated with the repo"
+      }
+    }
+  }
+}
