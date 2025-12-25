@@ -8,30 +8,47 @@ get_gitlab_user_raw() {
     curl -sf "${GITLAB_BASE_URL}/users?username=${username}"
 }
 
-parse_gitlab_user() {
-    jq '.[0] | {
-        id,
-        username,
-        name,
-        state,
-        web_url
+# Responsibility: Normalize to the Unified Schema
+# Even with less data, we maintain the structure to avoid breaking the Intel/Report engine.
+normalize_gitlab_user() {
+    jq ${JQ_OPTS} '.[0] | {
+        platform: "gitlab",
+        handle: .username,
+        display_name: (.name // .username),
+        email: (.public_email // null),
+        profile_url: .web_url,
+        metrics: {
+            public_repos: null,
+            followers: null,
+            following: null
+        },
+        social: {
+            twitter: null
+        },
+        location: null,
+        bio: null,
+        created_at: null
     }'
 }
+
 
 # --- Repository/Project Functions ---
 get_gitlab_repos_raw() {
     local username=$1
+    # GitLab calls repositories "projects"
+    # visibility=public ensures focus on OSINT without authentication.
     curl -sf "${GITLAB_BASE_URL}/users/${username}/projects?visibility=public&per_page=100"
 }
 
-parse_gitlab_repos() {
-    jq '.[] | {
-        id,
+normalize_gitlab_repos() {
+    jq ${JQ_OPTS} 'map({
         name: .name,
-        path: .path_with_namespace,
-        description,
+        full_name: .path_with_namespace,
         url: .web_url,
+        description: (.description // ""),
         stars: .star_count,
-        forks: .forks_count
-    }'
+        language: "N/A",
+        updated_at: .last_activity_at,
+        topics: (.topics // .tag_list // [])
+    })'
 }

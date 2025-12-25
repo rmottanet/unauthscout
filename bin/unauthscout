@@ -8,32 +8,39 @@ BASE_DIR=$(dirname "$(readlink -f "$0")")/..
 source "${BASE_DIR}/lib/core.sh"
 source "${BASE_DIR}/lib/gitlab_api.sh"
 source "${BASE_DIR}/lib/github_api.sh"
+source "${BASE_DIR}/lib/report.sh"
 
 main() {
-    local target="$1"
+    local target=""
     local raw_mode=false
+    local pretty_json=false
     local run_github=false
     local run_gitlab=false
-    local fetch_repos=false 
+    local fetch_repos=false
+    local summarize=false
     
-    # 1. Dependency Validation (Core)
+    # --- Dependency Validation (Core) --- 
     check_dependencies
 
-    # 2. Flag/argument handling
+    # --- Flag/argument handling ---
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --raw) raw_mode=true; shift ;;
-            --github|-gh) run_github=true; shift ;;
-            --gitlab|-gl) run_gitlab=true; shift ;;
-            --repos|-r) fetch_repos=true; shift ;;
-            -h|--help) show_help; exit 0 ;;
-            -*) die "Unknown option: $1" ;;
-            *) target="$1"; shift ;;
+            --raw)          raw_mode=true; shift ;;
+            --pretty)       pretty_json=true; shift ;;
+            --github|-gh)   run_github=true; shift ;;
+            --gitlab|-gl)   run_gitlab=true; shift ;;
+            --repos|-r)     fetch_repos=true; shift ;;
+            --summarize|-s) summarize=true; shift ;;
+            -v|--version)   show_version; exit 0 ;;
+            -h|--help)      show_help; exit 0 ;;
+            -*)             die "Option unknown: $1 (Try --help)" ;;
+            *)              target="$1"; shift ;;
         esac
     done
-    
-    # 3. Defaults
-    if [[ -z "$target" ]]; then show_help; exit 0; fi
+
+    [[ "$pretty_json" == true ]] && set_pretty_mode
+
+    [[ -z "$target" ]] && show_help && exit 0
     if [[ "$run_github" == false && "$run_gitlab" == false ]]; then
         run_github=true; run_gitlab=true
     fi
@@ -44,50 +51,64 @@ main() {
     # --- Fluxo GitLab ---
     if [[ "$run_gitlab" == true ]]; then
         log_info "Searching on GitLab..."
-        
-        # 1. Profile
-        local user_data
-        user_data=$(get_gitlab_user_raw "$target")
-        if [[ -n "$user_data" && "$user_data" != "[]" ]]; then
-            [[ "$raw_mode" == true ]] && echo "$user_data" || echo "$user_data" | parse_gitlab_user
+        local raw_gl=$(get_gitlab_user_raw "$target")
+
+        if [[ -n "$raw_gl" && "$raw_gl" != "[]" ]]; then
+            local normalized_gl_user=$(echo "$raw_gl" | normalize_gitlab_user)
             
-            # 2. Repos (Condicional)
+            if [[ "$raw_mode" == true ]]; then
+                echo "$normalized_gl_user"
+            else
+                render_user_report "$normalized_gl_user"
+            fi
+            
             if [[ "$fetch_repos" == true ]]; then
-                log_info "Fetching GitLab repositories..."
-                local repo_data
-                repo_data=$(get_gitlab_repos_raw "$target")
-                [[ "$raw_mode" == true ]] && echo "$repo_data" || echo "$repo_data" | parse_gitlab_repos
+                local repos_gl_norm=$(get_gitlab_repos_raw "$target" | normalize_gitlab_repos)
+                
+                if [[ "$raw_mode" == true ]]; then
+                    echo "$repos_gl_norm"
+                else
+                    echo "$repos_gl_norm" | render_repos_list
+                    [[ "$summarize" == true ]] && echo "$repos_gl_norm" | render_intel_summary
+                fi
             fi
         else
-            log_warn "User not found on GitLab"
+            log_warn "GitLab: Target not found or private."
         fi
-        echo "------------------------------------------------------------"
+        echo -e "\n------------------------------------------------------------"
     fi
 
     # --- Fluxo GitHub ---
     if [[ "$run_github" == true ]]; then
         log_info "Searching on GitHub..."
-        
-        # 1. Profile
-        local gh_user
-        gh_user=$(get_github_user_raw "$target")
-        if [[ -n "$gh_user" ]]; then
-            [[ "$raw_mode" == true ]] && echo "$gh_user" || echo "$gh_user" | parse_github_user
+        local raw_gh=$(get_github_user_raw "$target")
+
+        if [[ -n "$raw_gh" ]]; then
+            local normalized_gh_user=$(echo "$raw_gh" | normalize_github_user)
             
-            # 2. Repos (Condicional)
+            if [[ "$raw_mode" == true ]]; then
+                echo "$normalized_gh_user"
+            else
+                render_user_report "$normalized_gh_user"
+            fi
+
             if [[ "$fetch_repos" == true ]]; then
-                log_info "Fetching GitHub repositories..."
-                local gh_repos
-                gh_repos=$(get_github_repos_raw "$target")
-                [[ "$raw_mode" == true ]] && echo "$gh_repos" || echo "$gh_repos" | parse_github_repos
+                local repos_gh_norm=$(get_github_repos_raw "$target" | normalize_github_repos)
+                
+                if [[ "$raw_mode" == true ]]; then
+                    echo "$repos_gh_norm"
+                else
+                    echo "$repos_gh_norm" | render_repos_list
+                    [[ "$summarize" == true ]] && echo "$repos_gh_norm" | render_intel_summary
+                fi
             fi
         else
-            log_warn "User not found on GitHub"
+            log_warn "GitHub: Target not found."
         fi
-        echo "------------------------------------------------------------"
+        echo -e "\n------------------------------------------------------------"
     fi
 
-    log_success "Scout finished for $target"
+    log_success "Scout operation finished for: $target"
 }
 
 main "$@"

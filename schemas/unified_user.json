@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unified User Schema",
+  "description": "Standardized profile format for UnauthScout v0.3.0",
+  "type": "object",
+  "required": [
+    "platform",
+    "handle",
+    "display_name",
+    "profile_url",
+    "metrics",
+    "social"
+  ],
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": ["github", "gitlab"],
+      "description": "Source platform of the reconnaissance"
+    },
+    "handle": {
+      "type": "string",
+      "description": "Unique username or login"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "User's public name or alias"
+    },
+    "email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "description": "Publicly available email address"
+    },
+    "profile_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Full URL to the public profile"
+    },
+    "bio": {
+      "type": ["string", "null"],
+      "description": "User biography or description"
+    },
+    "location": {
+      "type": ["string", "null"],
+      "description": "Geographic location informed by user"
+    },
+    "created_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Account creation timestamp (ISO 8601)"
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["public_repos", "followers"],
+      "properties": {
+        "public_repos": { "type": ["integer", "null"] },
+        "followers": { "type": ["integer", "null"] },
+        "following": { "type": ["integer", "null"] }
+      }
+    },
+    "social": {
+      "type": "object",
+      "properties": {
+        "twitter": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
