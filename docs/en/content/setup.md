@@ -1,234 +1,210 @@
 # Setup and Troubleshooting
 
-This document describes how to set up UnauthScout, its runtime dependencies,
-and how to troubleshoot common errors during execution.
+This document describes how to set up UnauthScout, verify its runtime dependencies,
+and perform basic sanity testing. For comprehensive usage instructions and examples,
+see the separate [Usage Guide](./usage).
+
+## Purpose
+
+This guide ensures you can successfully install UnauthScout and run a basic
+reconnaissance operation. It focuses on **environment setup** and **initial
+validation**, not operational workflows.
 
 ## Requirements
 
-UnauthScout is intentionally lightweight and relies only on standard CLI tools.
+UnauthScout is intentionally lightweight and relies only on standard CLI tools
+available on most Unix-like systems.
 
 ### Required dependencies
 
-- **bash** (POSIX-compatible)
-- **curl** — HTTP client for API requests
-- **jq** — JSON parsing and normalization
+- **bash** (POSIX-compatible shell, version 4.0+)
+- **curl** (7.0+) — HTTP client for API requests
+- **jq** (1.6+) — JSON parsing and normalization
 
 ### Verify dependencies
 
 You can manually verify the required tools:
 
 ```bash
-bash --version
-curl --version
+bash --version | head -1
+curl --version | head -1
 jq --version
-````
+```
 
-If any command is missing, install it using your system package manager.
+If any command is missing or reports an incompatible version, install or update it
+using your system package manager.
+
+### Platform-specific installation commands
+
+| Platform | Command |
+|----------|---------|
+| Ubuntu/Debian | `sudo apt update && sudo apt install curl jq` |
+| Fedora/RHEL | `sudo dnf install curl jq` |
+| macOS (Homebrew) | `brew install curl jq` |
+| Alpine Linux | `apk add curl jq` |
 
 ## Installation
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/rmottanet/unauthscout.git
 cd unauthscout
+```
+
+### 2. Make the binary executable
+
+```bash
 chmod +x bin/unauthscout
 ```
 
-Optionally add the binary to your PATH:
+### 3. (Optional) Add to your PATH
+
+For temporary session access:
 
 ```bash
 export PATH="$PWD/bin:$PATH"
 ```
 
+For permanent access, add the line to your shell profile (`~/.bashrc`, `~/.zshrc`,
+etc.) or create a symbolic link:
+
+```bash
+sudo ln -s "$PWD/bin/unauthscout" /usr/local/bin/unauthscout
+```
+
 ## Basic Sanity Check
 
-Run a simple unauthenticated lookup:
+Once installed, verify the tool works correctly with a simple unauthenticated
+lookup of a known public figure:
 
 ```bash
-unauthscout torvalds
+./bin/unauthscout torvalds
 ```
 
-Expected behavior:
+**Expected successful behavior:**
 
-* JSON output
-* No authentication prompts
-* No stack traces or shell errors
+* JSON output (either compact or formatted, depending on default mode)
+* No authentication prompts or token requirements
+* No stack traces, shell errors, or permission issues
+* Clear platform identification in output
 
-## Repository / Project Enumeration
+**Expected output characteristics:**
 
-UnauthScout can optionally enumerate **public repositories/projects** associated
-with a user via the `--repos` flag.
+* Exit code `0`
+* Output to stdout (not stderr)
+* Structured JSON conforming to the unified schema
+* User profile information for Linus Torvalds on GitHub
 
-This feature is **explicitly opt-in** and scoped per provider.
+## Troubleshooting Initial Setup
 
-### Enumerate repositories on both providers
-
-```bash
-unauthscout torvalds --repos
-```
-
-### Enumerate GitHub repositories only
-
-```bash
-unauthscout torvalds --github --repos
-```
-
-### Enumerate GitLab projects only
-
-```bash
-unauthscout dzaporozhets --gitlab --repos
-```
-
-### Combine with raw mode
-
-Raw mode can be used to inspect the original API responses:
-
-```bash
-unauthscout torvalds --repos --raw
-unauthscout torvalds --github --repos --raw
-```
-
-Raw output is useful for:
-
-* Inspecting newly exposed fields
-* Validating API behavior
-* Supporting schema evolution
-
-## Common Errors and Troubleshooting
-
-### Missing dependency
+### Missing dependency error
 
 **Error**
 
 ```
-[ERROR] Missing required command: jq
+[ERROR] Dependência não encontrada: jq. Por favor, instale-a para continuar.
 ```
 
 **Cause**
 
-* One or more required tools are not installed or not in PATH.
+One or more required tools are not installed or not in PATH.
 
 **Resolution**
 
-Install the missing dependency, for example:
+Install the missing dependency using your system package manager (see table above).
+
+### Permission denied error
+
+**Error**
 
 ```bash
-sudo apt install jq
+./bin/unauthscout: Permission denied
 ```
 
-### Network or API failure
+**Cause**
+
+The binary lacks execute permissions.
+
+**Resolution**
+
+```bash
+chmod +x bin/unauthscout
+```
+
+### Command not found error
+
+**Error**
+
+```
+unauthscout: command not found
+```
+
+**Cause**
+
+The binary is not in your PATH.
+
+**Resolution**
+
+Either:
+1. Use the full path: `./bin/unauthscout`
+2. Add to PATH as described in the Installation section
+3. Create a symbolic link to a directory in your PATH
+
+### Network connectivity issues
 
 **Error**
 
 ```
 [ERROR] Failed to fetch GitHub user data
-```
-
-or
-
-```
 [ERROR] Failed to fetch GitLab user data
-```
-
-or during repository enumeration:
-
-```
-[ERROR] Failed to fetch repository data
 ```
 
 **Possible causes**
 
-* Network connectivity issues
-* Temporary API outage
-* Provider rate limiting
+* No internet connection
+* DNS resolution failure
+* Corporate firewall blocking API endpoints
 
 **Resolution**
 
-* Verify network access
-* Retry the request after a delay
-* Use `--raw` to inspect partial responses
-
-### Parsing failure
-
-**Error**
-
-```
-[ERROR] Failed to parse API response
-```
-
-**Cause**
-
-* API response format changed
-* Unexpected empty or malformed JSON
-* Tooling mismatch (`jq` version)
-
-**Resolution**
-
-* Re-run the command with `--raw`
-* Compare raw output with the documented API mappings
-* Validate schema alignment under `schemas/`
-
-### No results returned (GitLab)
-
-**Behavior**
-
-* Empty output or parsing error during profile or project lookup
-
-**Cause**
-
-* The GitLab `/users?username=` endpoint returns an empty array
-* Username does not exist or is ambiguous
-* User has no public projects
-
-**Resolution**
-
-* Verify the username manually
-* Inspect raw output using `--raw`
-
-## Debugging with Raw Mode
-
-UnauthScout provides a `--raw` flag to bypass normalization:
+* Verify network connectivity: `curl -s https://api.github.com`
+* Test API endpoints directly:
 
 ```bash
-unauthscout <username> --raw
-unauthscout <username> --github --raw
-unauthscout <username> --repos --raw
+curl -s "https://api.github.com/users/torvalds" | jq .login
+curl -s "https://gitlab.com/api/v4/users?username=dzaporozhets" | jq .[0].username
 ```
 
-Use raw mode to:
+## Verifying Version
 
-* Inspect newly exposed fields
-* Validate API behavior
-* Aid schema evolution
+After installation, verify you're running the expected version:
 
-Raw mode is intended for **analysis and development**, not automation.
+```bash
+./bin/unauthscout --version
+```
+
+Expected output format: `UnauthScout vX.X.X`
 
 ## Expected Exit Behavior
 
-* Successful execution returns exit code `0`
-* Fatal errors terminate execution with a non-zero exit code
-* All errors are printed to stderr with a clear message
+* **Successful execution**: Exit code `0`
+* **Fatal errors**: Non-zero exit code with descriptive error message to stderr
+* **User errors** (e.g., missing username): Exit code `1` with help text
 
-## Notes on Rate Limiting
+## Next Steps
 
-UnauthScout does not attempt to bypass rate limits.
+Once you've successfully run the basic sanity check, proceed to the
+[Usage Guide](./usage) for comprehensive instructions on:
 
-* GitHub unauthenticated requests are rate-limited
-* GitLab unauthenticated requests may also be throttled
-
-For sustained usage, consider:
-
-* Spacing requests
-* Limiting provider scope (`--github` / `--gitlab`)
-* Adding authenticated support in a future version
+* Platform-specific reconnaissance (`--github`, `--gitlab`)
+* Repository enumeration (`--repos`)
+* Intelligence summarization (`--summarize`)
+* Output formatting options (`--raw`, `--pretty`)
+* Advanced workflows and examples
 
 ## Summary
 
-UnauthScout is designed to fail fast and visibly.
-
-If something breaks:
-
-1. Check dependencies
-2. Re-run with `--raw`
-3. Compare raw output against the API mapping docs
-4. Update schemas and parsers accordingly
-
+UnauthScout is designed to have minimal setup requirements and fail visibly when
+requirements aren't met. A successful `./bin/unauthscout torvalds` test confirms
+your environment is properly configured for all reconnaissance operations.

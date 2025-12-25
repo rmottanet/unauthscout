@@ -1,233 +1,215 @@
-# Configuração e resolução de problemas
+# Configuração e Solução de Problemas
 
-Este documento descreve como configurar o UnauthScout, suas dependências de tempo de execução
-e como resolver erros comuns durante a execução.
+Este documento descreve como configurar o UnauthScout, verificar suas dependências de tempo de execução
+e realizar testes básicos de sanidade. Para obter instruções e exemplos de uso completos,
+consulte o [Guia de Uso](./usage) separado.
 
-Requisitos
+## Objetivo
 
-O UnauthScout é intencionalmente leve e depende apenas de ferramentas CLI padrão.
+Este guia garante que você possa instalar o UnauthScout com sucesso e executar uma operação básica de reconhecimento.
+Ele se concentra na **configuração do ambiente** e na **validação inicial**, e não em fluxos de trabalho operacionais.
+
+## Requisitos
+
+O UnauthScout foi projetado para ser leve e depende apenas de ferramentas de linha de comando padrão
+disponíveis na maioria dos sistemas do tipo Unix.
 
 ### Dependências necessárias
 
-- **bash** (compatível com POSIX)
-- **curl** — cliente HTTP para solicitações de API
-- **jq** — análise e normalização de JSON
+- **bash** (shell compatível com POSIX, versão 4.0+)
+- **curl** (7.0+) — Cliente HTTP para requisições de API
+- **jq** (1.6+) — Análise e normalização de JSON
 
 ### Verificar dependências
 
 Você pode verificar manualmente as ferramentas necessárias:
 
 ```bash
-bash --version
-curl --version
+bash --version | head -1
+curl --version | head -1
 jq --version
-````
+```
 
-Se algum comando estiver faltando, instale-o usando o gerenciador de pacotes do seu sistema.
+Se algum comando estiver faltando ou reportar uma versão incompatível, instale ou atualize-o
+usando o gerenciador de pacotes do seu sistema.
+
+### Comandos de instalação específicos da plataforma
+
+| Plataforma | Comando |
+
+|----------|---------|
+
+| Ubuntu/Debian | `sudo apt update && sudo apt install curl jq` |
+
+| Fedora/RHEL | `sudo dnf install curl jq` |
+
+| macOS (Homebrew) | `brew install curl jq` |
+
+| Alpine Linux | `apk add curl jq` |
 
 ## Instalação
+
+### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/rmottanet/unauthscout.git
 cd unauthscout
+```
+
+### 2. Torne o binário executável
+
+```bash
 chmod +x bin/unauthscout
 ```
 
-Opcionalmente, adicione o binário ao seu PATH:
+### 3. (Opcional) Adicione ao seu PATH
+
+Para acesso temporário:
 
 ```bash
 export PATH="$PWD/bin:$PATH"
 ```
 
-## Verificação Básica de Sanidade
-
-Execute uma pesquisa simples sem autenticação:
-
-```bash
-unauthscout torvalds
-```
-
-Comportamento esperado:
-
-* Saída JSON
-* Sem solicitações de autenticação
-* Sem rastreamentos de pilha ou erros de shell
-
-## Enumeração de Repositórios/Projetos
-
-O UnauthScout pode, opcionalmente, enumerar **repositórios/projetos públicos** associados
-a um usuário por meio da flag `--repos`.
-
-Este recurso é **explicitamente ativado** e tem escopo definido por provedor.
-
-### Enumerar repositórios em ambos os provedores
+Para acesso permanente, adicione a linha ao seu perfil do shell (`~/.bashrc`, `~/.zshrc`,
+etc.) ou crie um link simbólico:
 
 ```bash
-unauthscout torvalds --repos
+sudo ln -s "$PWD/bin/unauthscout" /usr/local/bin/unauthscout
 ```
 
-### Enumerar apenas repositórios do GitHub
+## Verificação básica
+
+Após a instalação, verifique o A ferramenta funciona corretamente com uma simples busca não autenticada de uma figura pública conhecida:
 
 ```bash
-unauthscout torvalds --github --repos
+./bin/unauthscout torvalds
 ```
 
-### Enumerar apenas projetos do GitLab
+**Comportamento esperado:**
 
-```bash
-unauthscout dzaporozhets --gitlab --repos
-```
+* Saída JSON (compacta ou formatada, dependendo do modo padrão)
+* Sem solicitações de autenticação ou requisitos de token
+* Sem rastreamentos de pilha, erros de shell ou problemas de permissão
+* Identificação clara da plataforma na saída
 
-### Combinar com o modo raw
+**Características de saída esperadas:**
 
-O modo raw pode ser usado para inspecionar as respostas originais da API:
+* Código de saída `0`
+* Saída para stdout (não stderr)
+* JSON estruturado em conformidade com o esquema unificado
+* Informações do perfil do usuário Linus Torvalds no GitHub
 
-```bash
-unauthscout torvalds --repos --raw
-unauthscout torvalds --github --repos --raw
-```
+## Solução de problemas na configuração inicial
 
-A saída raw é útil para:
-
-* Inspecionar campos recém-expostos
-* Validar o comportamento da API
-* Suportar a evolução do esquema
-
-## Erros comuns e solução de problemas
-
-### Ausente Dependência
+### Erro de dependência ausente
 
 **Erro**
 
 ```
-[ERRO] Comando necessário ausente: jq
+[ERRO] Dependência não encontrada: jq. Por favor, instale-a para continuar.
+
 ```
 
 **Causa**
 
-* Uma ou mais ferramentas necessárias não estão instaladas ou não estão no PATH.
+Uma ou mais ferramentas necessárias não estão instaladas ou não estão no PATH. **Solução**
+
+Instale a dependência ausente usando o gerenciador de pacotes do seu sistema (consulte a tabela acima).
+
+### Erro de permissão negada
+
+**Erro**
+
+```bash
+ ./bin/unauthscout: Permissão negada
+```
+
+**Causa**
+
+O binário não possui permissões de execução.
 
 **Solução**
 
-Instale a dependência ausente, por exemplo:
-
 ```bash
-sudo apt install jq
+chmod +x bin/unauthscout
 ```
 
-### Falha de rede ou API
+### Erro de comando não encontrado
+
+**Erro**
+
+```
+unauthscout: comando não encontrado
+```
+
+**Causa**
+
+O binário não está no seu PATH.
+
+**Solução**
+
+Uma das opções:
+1. Use o caminho completo: `./bin/unauthscout`
+2. Adicione ao PATH conforme descrito na seção Instalação
+3. Crie um link simbólico para um diretório no seu PATH
+
+### Problemas de conectividade de rede
 
 **Erro**
 
 ```
 [ERRO] Falha ao buscar dados do usuário do GitHub
-```
-
-ou
-
-```
 [ERRO] Falha ao buscar dados do usuário do GitLab
-```
-
-ou durante a enumeração de repositórios:
-
-```
-[ERRO] Falha ao buscar dados do repositório
 ```
 
 **Possíveis causas**
 
-* Problemas de conectividade de rede
-* Interrupção temporária da API
-* Limitação de taxa do provedor
+* Sem conexão com a internet
+* Falha na resolução de DNS
+* Firewall corporativo bloqueando endpoints da API
 
 **Solução**
 
-* Verifique o acesso à rede
-* Tente novamente a solicitação após um atraso
-* Use `--raw` para inspecionar respostas parciais
-
-### Falha na análise
-
-**Erro**
-
-```
-[ERRO] Falha ao analisar a resposta da API
-```
-
-**Causa**
-
-* Formato da resposta da API * JSON vazio ou malformado inesperado
-* Incompatibilidade de ferramentas (versão do `jq`)
-
-**Solução**
-
-* Execute o comando novamente com `--raw`
-* Compare a saída bruta com os mapeamentos da API documentada
-* Valide o alinhamento do esquema em `schemas/`
-
-### Nenhum resultado retornado (GitLab)
-
-**Comportamento**
-
-* Saída vazia ou erro de análise durante a busca de perfil ou projeto
-
-**Causa**
-
-* O endpoint `/users?username=` do GitLab retorna um array vazio
-* O nome de usuário não existe ou é ambíguo
-* O usuário não possui projetos públicos
-
-**Solução**
-
-* Verifique o nome de usuário manualmente
-* Inspecione a saída bruta usando `--raw`
-
-## Depuração com o Modo Bruto
-
-O UnauthScout fornece um parâmetro `--raw` para ignorar a normalização:
+* Verifique a conectividade de rede: `curl -s https://api.github.com`
+* Teste os endpoints da API diretamente:
 
 ```bash
-unauthscout <nome de usuário> --raw
-unauthscout <nome de usuário> --github --raw
-unauthscout <nome de usuário> --repos --raw
+
+curl -s "https://api.github.com/users/torvalds" | jq .login
+
+curl -s "https://gitlab.com/api/v4/users?username=dzaporozhets" | jq .[0].username
 
 ```
 
-Use o modo raw para:
+## Verificando a versão
 
-* Inspecionar campos recém-expostos
-* Validar o comportamento da API
-* Auxiliar na evolução do esquema
+Após a instalação, verifique se você está executando a versão esperada:
 
-O modo raw destina-se à **análise e desenvolvimento**, não à automação.
+```bash
+./bin/unauthscout --version
+```
+
+Formato de saída esperado: `UnauthScout vX.X.X`
 
 ## Comportamento de saída esperado
 
-* A execução bem-sucedida retorna o código de saída `0`
-* Erros fatais encerram a execução com um código de saída diferente de zero
-* Todos os erros são impressos no stderr com uma mensagem clara
+* **Execução bem-sucedida**: Código de saída `0`
+* **Erros fatais**: Código de saída diferente de zero com mensagem de erro descritiva no stderr
+* **Erros do usuário** (por exemplo, nome de usuário ausente): Código de saída `1` com texto de ajuda
 
-## Observações sobre limitação de taxa
+## Próximos passos
 
-O UnauthScout não tenta burlar os limites de taxa.
+Após executar com sucesso a verificação básica, consulte o
+[Guia de Uso](./usage) para obter instruções detalhadas sobre:
 
-* As requisições não autenticadas do GitHub têm limite de taxa.
-* As requisições não autenticadas do GitLab também podem ter sua taxa de requisições limitada.
-
-Para uso contínuo, considere:
-
-* Espaçamento entre as requisições
-* Limitar o escopo do provedor (`--github` / `--gitlab`)
-* Adicionar suporte a autenticação em uma versão futura
+* Reconhecimento específico da plataforma (`--github`, `--gitlab`)
+* Enumeração de repositórios (`--repos`)
+* Sumarização de inteligência (`--summarize`)
+* Opções de formatação de saída (`--raw`, `--pretty`)
+* Fluxos de trabalho avançados e exemplos
 
 ## Resumo
 
-O UnauthScout foi projetado para falhar de forma rápida e visível.
-
-Se algo quebrar:
-
-1. Verifique as dependências
-2. Execute novamente com `--raw`
-3. Compare a saída bruta com a documentação de mapeamento da API
-4. Atualize os esquemas e analisadores sintáticos de acordo
+O UnauthScout foi projetado para ter requisitos mínimos de configuração e falhar visivelmente quando
+os requisitos não forem atendidos. Um teste bem-sucedido com `./bin/unauthscout torvalds` confirma
+que seu ambiente está configurado corretamente para todas as operações de reconhecimento.
