@@ -6,6 +6,58 @@ The format follows **Keep a Changelog** and adheres to **Semantic Versioning**.
 
 ---
 
+## [v0.3.0] — Unified Intelligence Release
+
+### Added
+- **Unified Intelligence Layer** – Cross-provider normalization into standardized metadata schemas
+- **Intelligence summarization** – New `--summarize` flag for analytical insights (requires `--repos`)
+- **Enhanced output control** – New `--pretty` flag for human-readable JSON formatting (requires `--raw`)
+- **Version tracking** – New `--version` flag for release identification
+- **Structured reporting module** – Clean terminal presentation via `lib/report.sh`
+- **Unified output schemas** – Authoritative contracts for cross-platform intelligence:
+  - `schemas/unified_user.json`
+  - `schemas/unified_repo.json`
+- **Full Portuguese translation** – Complete documentation localization for v0.3.0 features
+
+### Enhanced
+- **Normalization functions** – Renamed from `parse_*` to `normalize_*` reflecting architectural evolution
+- **CLI orchestration** – Extended with intelligence workflow support (`-r -s` combination)
+- **Integration tests** – Updated for unified schema validation and intelligence output verification
+- **Documentation structure** – Complete refactor with separation of concerns:
+  - `setup.md` – Pure installation and environment validation
+  - `usage.md` – Comprehensive operational guide for v0.3.0 features
+  - `osint-flow.md` – Updated mental model with intelligence layer integration
+- **API field mapping documentation** – Unified cross-provider mappings:
+  - `docs/api_maps/unified-user-map.md`
+  - `docs/api_maps/unified-repo-map.md`
+- **Navigation system** – Updated sidebar synchronization across language versions
+
+### Design Notes
+- **Unified schemas are authoritative** – Providers adapt to common contracts, not vice versa
+- **Intelligence is strictly additive** – Raw data remains fully accessible via `--raw` flag
+- **Presentation is decoupled** – Report module handles formatting only, no data collection
+- **Cross-provider comparison enabled** – Common field names despite platform-specific limitations
+- **GitLab API constraints documented** – Language field explicitly noted as "N/A" in summaries
+- **Backward compatibility maintained** – All existing CLI flags and behaviors unchanged
+- **Minimal dependency footprint preserved** – No new runtime dependencies introduced
+
+### Documentation
+- Complete workflow documentation for intelligence summarization features
+- Platform-specific constraint documentation (GitLab language limitations)
+- Examples for combined flag usage (`--repos --summarize`, `--raw --pretty`)
+- Updated OSINT flow to reflect intelligence layer as logical extension
+- Multilingual navigation consistency across English and Portuguese versions
+
+### Known Limitations
+- **GitHub-centric intelligence** – Language analysis limited to GitHub (GitLab returns "N/A")
+- **Summarization dependency** – `--summarize` requires explicit `--repos` flag
+- **Pretty formatting scope** – `--pretty` only affects output when combined with `--raw`
+- **Platform asymmetry** – Some intelligence features (top languages) unavailable for GitLab
+- **First-page limitation** – Pagination not implemented (affects repositories >100 items)
+- **No temporal comparison** – Snapshot comparison or change tracking not yet implemented
+
+---
+
 ## [v0.2.0] — Repository Enumeration Release
 
 ### Added
