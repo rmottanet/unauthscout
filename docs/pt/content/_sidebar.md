@@ -2,7 +2,8 @@
 
 <h3>🚀 Getting Started</h3>
 <ul>
-    <li>[Instalação e Uso](home/setup) - Guia de instalação rápida e primeira configuração</li>
+    <li>[Instalação](home/setup) - Guia de instalação rápida e primeira configuração</li>
+    <li>[Como Usar](home/usage) - Guia de uso</li>
 </ul>
 
 <h3>🧩 Core Concepts</h3>
@@ -12,10 +13,12 @@
 
 <h3>📊 API Documentation</h3>
 <ul>
-    <li>[GitHub API Repo Map](api_maps/github-repo-map) - Mapeamento completo de campos para dados de usuários do GitHub</li>
-    <li>[GitHub API User Map](api_maps/github-user-map) - Mapeamento completo dos campos para dados de usuários do GitLab</li>
-    <li>[GitLab API Repo Map](api_maps/gitlab-repo-map) - Mapeamento completo dos campos para dados de usuários do GitLab</li>
-    <li>[GitLab API User Map](api_maps/gitlab-user-map) - Mapeamento completo dos campos para dados de usuários do GitLab</li>
+    <li>[UnauthScout API Repo Map](api_maps/unified-repo-map) - Mapeamento dos campos para dados de repositórios unificados</li>
+    <li>[UnauthScout API User Map](api_maps/unified-user-map) - Mapeamento dos campos para dados de usuários unificados</li>
+    <li>[GitHub API Repo Map](api_maps/github-repo-map) - Mapeamento dos campos para dados de repositórios do GitHub</li>
+    <li>[GitHub API User Map](api_maps/github-user-map) - Mapeamento dos campos para dados de usuários do GitHub</li>
+    <li>[GitLab API Repo Map](api_maps/gitlab-repo-map) - Mapeamento dos campos para dados de repositórios do GitLab</li>
+    <li>[GitLab API User Map](api_maps/gitlab-user-map) - Mapeamento dos campos para dados de usuários do GitLab</li>
 </ul>
 
 ---
