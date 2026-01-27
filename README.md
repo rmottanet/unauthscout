@@ -1,3 +1,10 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=rmottanet_unauthscout&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rmottanet_unauthscout)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=rmottanet_unauthscout&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=rmottanet_unauthscout)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=rmottanet_unauthscout&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=rmottanet_unauthscout)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=rmottanet_unauthscout&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=rmottanet_unauthscout)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=rmottanet_unauthscout&metric=bugs)](https://sonarcloud.io/summary/new_code?id=rmottanet_unauthscout)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=rmottanet_unauthscout&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=rmottanet_unauthscout)
+
 # UnauthScout
 
 UnauthScout is a CLI tool for **unauthenticated OSINT reconnaissance** on public
